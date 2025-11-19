@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Broken Product Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-4">
+  <input id="search" class="border p-2 mb-4 w-full" placeholder="Search something">
+
+  <div id="products" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+    <div class="border p-4">
+      <h2 class="font-bold">Laptop</h2>
+      <p>$1000</p>
+      <p>Good laptop</p>
+    </div>
+
+    <div class="border p-4">
+      <h2 class="font-bold">Phone</h2>
+      <p>$500</p>
+      <p>Nice phone</p>
+    </div>
+
+    <div class="border p-4">
+      <h2 class="font-bold">Camera</h2>
+      <p>$300</p>
+      <p>Sharp image</p>
+    </div>
+  </div>
+
+  <script>
+    // Broken: typo, broken logic, no event binding
+    functon filter() {
+      var keyword = document.getElementById("search").value
+      var items = document.querySelectorAll("#products .item-not-exist")
+      items.forEach(i=>{
+        if(!i.textContent.includes(keyword)) {
+          i.style.display = 'none'
+        }
+      })
+    }
+  </script>
+</body>
+</html>
