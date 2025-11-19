@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Explorer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .fade-in {
+      transition: opacity 200ms ease, transform 200ms ease;
+    }
+    .fade-in[data-visible="false"] {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fade-in {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div class="relative">
+    <div class="absolute inset-x-0 top-0 h-[420px] bg-gradient-to-br from-indigo-500/40 via-slate-900 to-slate-950 blur-3xl opacity-80 pointer-events-none"></div>
+  </div>
+
+  <header class="relative z-10 border-b border-white/10 bg-slate-950/80 backdrop-blur">
+    <div class="mx-auto flex max-w-6xl flex-col gap-6 px-5 pb-10 pt-12 text-slate-100 md:px-8">
+      <div class="flex flex-col gap-3">
+        <span class="inline-flex w-fit items-center gap-2 rounded-full bg-indigo-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-indigo-200">
+          Curated Catalog
+        </span>
+        <h1 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+          Discover products that match your flow
+        </h1>
+        <p class="max-w-2xl text-base text-slate-300 sm:text-lg">
+          Browse a curated selection of devices and accessories. Search across categories or sort by price to quickly find what fits your needs.
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 text-sm text-slate-400">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          Real-time filtering with loading feedback
+        </div>
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4">
+            <path fill-rule="evenodd" d="M4.5 5.25A.75.75 0 0 1 5.25 4.5h13.5a.75.75 0 0 1 .75.75v2.443a1.5 1.5 0 0 1-.44 1.061l-4.62 4.62v4.126l-3 1.5v-5.626l-4.62-4.62a1.5 1.5 0 0 1-.44-1.061V5.25Z" clip-rule="evenodd" />
+          </svg>
+          Responsive layout for every screen
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-8 md:px-8">
+    <section id="controls" class="rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-xl shadow-black/30">
+      <form class="grid gap-4 md:grid-cols-12" role="search" aria-label="Product filters">
+        <div class="md:col-span-5">
+          <label for="searchInput" class="block text-sm font-medium text-slate-300">Search products</label>
+          <div class="relative mt-2">
+            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-5 w-5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m0 0a7.5 7.5 0 1 0-10.607-10.607 7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+            </span>
+            <input id="searchInput" name="search" type="search" placeholder="Search by name or description" class="w-full rounded-xl border border-white/10 bg-slate-950/60 py-3 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40" autocomplete="off">
+          </div>
+        </div>
+
+        <div class="md:col-span-3">
+          <label for="categoryFilter" class="block text-sm font-medium text-slate-300">Category</label>
+          <select id="categoryFilter" name="category" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-3">
+          <label for="sortSelect" class="block text-sm font-medium text-slate-300">Sort by</label>
+          <select id="sortSelect" name="sort" class="mt-2 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40">
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name">Name A → Z</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-1 flex items-end justify-end">
+          <button type="button" id="resetButton" class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-white transition hover:border-indigo-400 hover:bg-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-400/50">
+            Reset
+          </button>
+        </div>
+      </form>
+
+      <div class="mt-6 flex flex-wrap items-center justify-between gap-4 text-sm text-slate-400">
+        <div id="resultsSummary">Showing 0 products</div>
+        <div class="inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-200">
+          <span class="h-2 w-2 rounded-full bg-indigo-400"></span>
+          UI updates in real time
+        </div>
+      </div>
+    </section>
+
+    <section id="productSection" class="relative mt-10" aria-live="polite" aria-busy="false">
+      <div id="loadingState" class="fade-in absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-950/80 backdrop-blur" data-visible="false">
+        <div class="h-12 w-12 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
+        <p class="text-sm text-slate-300">Refreshing your curated list…</p>
+      </div>
+
+      <div id="productContainer" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"></div>
+
+      <div id="emptyState" class="fade-in hidden rounded-2xl border border-dashed border-white/20 bg-slate-900/60 p-10 text-center" data-visible="false">
+        <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-indigo-200">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6">
+            <path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.044.144 1.86.96 2.004 2.004a49.255 49.255 0 0 1 0 11.36 2.25 2.25 0 0 1-2.004 2.004 49.255 49.255 0 0 1-11.36 0 2.25 2.25 0 0 1-2.004-2.004 49.255 49.255 0 0 1 0-11.36 2.25 2.25 0 0 1 2.004-2.004ZM9.75 8.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5ZM15.75 8.25a.75.75 0 0 0-1.5 0v7.5a.75.75 0 0 0 1.5 0v-7.5Z" clip-rule="evenodd" />
+          </svg>
+        </span>
+        <h2 class="mt-4 text-lg font-semibold text-white">No matches found</h2>
+        <p class="mt-1 text-sm text-slate-400">Try adjusting your search or switching categories to explore more products.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="relative z-10 border-t border-white/10 bg-slate-950/80 py-10 text-center text-xs text-slate-500">
+    Updated in real time • Crafted for the modern web
+  </footer>
+
+  <script>
+    const products = [
+      { id: 1, name: "Aurora Laptop 14\"", price: 1199, description: "Ultra-light notebook with 12-hour battery life and OLED display.", category: "Computers" },
+      { id: 2, name: "Nova Studio Monitor", price: 349, description: "27-inch 5K display with pro-level color accuracy for creatives.", category: "Accessories" },
+      { id: 3, name: "Pulse Wireless Earbuds", price: 189, description: "Adaptive noise cancelling with 28-hour battery and fast pairing.", category: "Audio" },
+      { id: 4, name: "Lumen Smart Lamp", price: 129, description: "Wi-Fi enabled desk lamp with ambient light sensing and automation.", category: "Home" },
+      { id: 5, name: "Voyager 2-in-1", price: 999, description: "Convertible tablet and laptop with detachable keyboard and pen.", category: "Computers" },
+      { id: 6, name: "Edge Mechanical Keyboard", price: 179, description: "Hot-swappable switches, per-key RGB, and aluminum chassis.", category: "Accessories" },
+      { id: 7, name: "Nimbus Action Camera", price: 429, description: "Waterproof 6K shooter with horizon leveling and live streaming.", category: "Cameras" },
+      { id: 8, name: "Zenith Noise Cancelling Headphones", price: 399, description: "Studio-grade sound with 40-hour battery and multi-device pairing.", category: "Audio" },
+      { id: 9, name: "Atlas Smartwatch", price: 279, description: "Advanced fitness tracking with AMOLED display and LTE support.", category: "Wearables" },
+      { id: 10, name: "Flow Desk Mat", price: 69, description: "Dual-texture desk mat with cable routing and spill-resistant coating.", category: "Accessories" },
+      { id: 11, name: "Glide Portable SSD", price: 249, description: "2TB NVMe SSD with 2,000 MB/s transfer speeds in a compact shell.", category: "Storage" },
+      { id: 12, name: "Horizon Ultra-Wide Monitor", price: 749, description: "49-inch ultrawide with 240Hz refresh and panoramatic workspace.", category: "Accessories" }
+    ];
+
+    const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const sortSelect = document.getElementById("sortSelect");
+    const resetButton = document.getElementById("resetButton");
+    const productContainer = document.getElementById("productContainer");
+    const emptyState = document.getElementById("emptyState");
+    const loadingState = document.getElementById("loadingState");
+    const productSection = document.getElementById("productSection");
+    const resultsSummary = document.getElementById("resultsSummary");
+
+    const LOADING_DELAY_MS = 360;
+    let loadingTimeout = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      hydrateCategoryFilter();
+      renderProducts(products);
+      resultsSummary.textContent = `Showing ${products.length} products`;
+      bindEvents();
+    });
+
+    function hydrateCategoryFilter() {
+      const categories = Array.from(new Set(products.map((item) => item.category))).sort();
+      const fragment = document.createDocumentFragment();
+      categories.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        fragment.appendChild(option);
+      });
+      categoryFilter.appendChild(fragment);
+    }
+
+    function bindEvents() {
+      searchInput.addEventListener("input", debounce(applyFilters, 120));
+      categoryFilter.addEventListener("change", applyFilters);
+      sortSelect.addEventListener("change", applyFilters);
+      resetButton.addEventListener("click", () => {
+        searchInput.value = "";
+        categoryFilter.value = "all";
+        sortSelect.value = "featured";
+        applyFilters();
+        searchInput.focus();
+      });
+    }
+
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      const category = categoryFilter.value;
+      const sortBy = sortSelect.value;
+
+      let filtered = products.filter((product) => {
+        const matchesQuery = !query || product.name.toLowerCase().includes(query) || product.description.toLowerCase().includes(query);
+        const matchesCategory = category === "all" || product.category === category;
+        return matchesQuery && matchesCategory;
+      });
+
+      if (sortBy === "price-asc") {
+        filtered = filtered.slice().sort((a, b) => a.price - b.price);
+      } else if (sortBy === "price-desc") {
+        filtered = filtered.slice().sort((a, b) => b.price - a.price);
+      } else if (sortBy === "name") {
+        filtered = filtered.slice().sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      triggerLoading(() => {
+        renderProducts(filtered);
+        updateSummary(filtered.length);
+      });
+    }
+
+    function triggerLoading(onComplete) {
+      clearTimeout(loadingTimeout);
+      setLoading(true);
+      loadingTimeout = setTimeout(() => {
+        setLoading(false);
+        onComplete();
+      }, LOADING_DELAY_MS);
+    }
+
+    function setLoading(isLoading) {
+      productSection.setAttribute("aria-busy", String(isLoading));
+      loadingState.dataset.visible = String(isLoading);
+      loadingState.classList.toggle("hidden", !isLoading);
+      disableControls(isLoading);
+    }
+
+    function disableControls(disabled) {
+      [searchInput, categoryFilter, sortSelect, resetButton].forEach((control) => {
+        control.disabled = disabled;
+        control.classList.toggle("opacity-60", disabled);
+        control.classList.toggle("cursor-not-allowed", disabled);
+      });
+    }
+
+    function renderProducts(items) {
+      productContainer.innerHTML = "";
+      if (items.length === 0) {
+        emptyState.dataset.visible = "true";
+        emptyState.classList.remove("hidden");
+        productContainer.classList.add("hidden");
+        return;
+      }
+
+      emptyState.dataset.visible = "false";
+      emptyState.classList.add("hidden");
+      productContainer.classList.remove("hidden");
+
+      const fragment = document.createDocumentFragment();
+      items.forEach((product, index) => {
+        const card = document.createElement("article");
+        card.className = "product-card fade-in flex h-full flex-col justify-between rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-lg shadow-black/20 ring-1 ring-white/5 transition duration-200 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-900/40";
+        card.dataset.visible = "true";
+        card.style.transitionDelay = `${index * 40}ms`;
+        card.innerHTML = `
+          <div class="flex flex-col gap-4">
+            <div class="inline-flex items-center gap-2 text-xs font-medium text-indigo-200">
+              <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-indigo-400/40 bg-indigo-500/10 text-indigo-200">${product.category.charAt(0)}</span>
+              <span class="rounded-full bg-indigo-500/10 px-2.5 py-1">${product.category}</span>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold tracking-tight text-white">${product.name}</h2>
+              <p class="mt-2 text-sm text-slate-400">${product.description}</p>
+            </div>
+          </div>
+          <div class="mt-6 flex items-center justify-between">
+            <span class="text-xl font-semibold text-indigo-300">${formatter.format(product.price)}</span>
+            <button type="button" class="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-indigo-100 transition hover:border-indigo-300 hover:bg-indigo-500/20">
+              View details
+            </button>
+          </div>
+        `;
+        fragment.appendChild(card);
+      });
+
+      productContainer.appendChild(fragment);
+    }
+
+    function updateSummary(count) {
+      const label = count === 1 ? "product" : "products";
+      resultsSummary.textContent = `Showing ${count} ${label}`;
+    }
+
+    function debounce(callback, wait) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => callback.apply(null, args), wait);
+      };
+    }
+  </script>
+</body>
+</html>
