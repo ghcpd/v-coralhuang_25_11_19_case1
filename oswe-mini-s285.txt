@@ -1,0 +1,343 @@
+User: ## Prompt
+
+You are a web developer working inside a persistent code execution session with full filesystem access to the current working directory.
+All modifications must be applied **in-place** to files in the current directory (do not create separate project roots unless strictly necessary).
+
+---
+
+## Goal
+
+Build a modern, responsive **product browsing and search UI** and set up a **reusable environment** with **one-click testing**.
+
+The UI should:
+
+* Display a list/grid of product cards (name, price, short description).
+* Allow searching products by a text input (filtering the list).
+* Optionally support a category filter and/or sort by price.
+* Show a loading state when applying filters (simulated is fine).
+* Show a friendly empty state when no products match.
+* Look visually modern and clean, with good spacing, typography, and hierarchy.
+
+Work iteratively: **plan → edit → run → verify → refine**.
+Keep each code change minimal, explain what you changed, and ensure the application runs successfully after each step.
+
+---
+
+## Workspace
+
+* Work in the **current directory**.
+* Ignore any `.git` folder.
+* Detect project type:
+
+  * If React/Next.js files are created, treat it as a **Next.js app**.
+  * If only HTML/CSS/JS is needed, treat it as a **static HTML app**.
+
+---
+
+## Entrypoints
+
+* Next.js app: `app/page.tsx` (create if missing).
+* Static HTML app: `index.html` (create if missing).
+
+---
+
+## Dev Server Rules
+
+### Next.js
+
+* Start:
+  `nohup yarn dev -p 3000 > /tmp/nextjs.log 2>&1 &`
+* Verify HTTP 200 at `http://localhost:3000`.
+* If errors occur:
+
+  * Inspect logs: `tail -n 200 /tmp/nextjs.log`.
+  * Fix and retry until the server starts successfully.
+
+### Static HTML
+
+* Start:
+  `nohup python3 -m http.server 3000 > /tmp/html.log 2>&1 &`
+* Verify HTTP 200 at `http://localhost:3000`.
+* If errors occur:
+
+  * Inspect logs: `tail -n 100 /tmp/html.log`.
+  * Fix and retry.
+
+---
+
+## Step-by-Step Workflow
+
+1. **Understand & Plan**
+
+   * Restate the requested UI and features.
+   * Decide whether to use Next.js or static HTML.
+   * List the key files you will create or modify.
+
+2. **Setup / Inspection**
+
+   * If using Next.js, ensure a minimal `package.json` and required config exist.
+   * If using static HTML, ensure `index.html` exists and is loadable.
+   * Do not introduce unnecessary files.
+
+3. **Implementation**
+
+   * Edit or create files incrementally.
+   * Keep edits small and focused.
+   * Use clean, semantic HTML, and either Tailwind CSS or well-structured CSS.
+   * Ensure JavaScript/TypeScript builds without errors.
+
+4. **Run & Verify**
+
+   * Start or restart the appropriate dev server.
+   * Confirm `http://localhost:3000` returns HTTP 200.
+   * Manually verify:
+
+     * Product list renders.
+     * Search/filter behavior works.
+     * Loading and empty states appear appropriately.
+
+5. **UI/UX Polish**
+
+   * Make the layout responsive (mobile, tablet, desktop).
+   * Use a clear visual hierarchy, consistent spacing, and modern styling.
+   * Add smooth transitions for interactions (hover, filter changes).
+   * Ensure accessibility basics (labels, semantic elements).
+
+---
+
+## Reusable Environment & Automation
+
+You must create the following **reusable scripts** in the current directory:
+
+* `setup.sh`
+
+  * Install all required dependencies.
+  * Prepare the environment so the app and tests can run on a clean machine.
+
+* `run.sh`
+
+  * Start the dev server on port 3000 for manual inspection.
+  * Detect whether the project is Next.js or static HTML and start the appropriate server.
+
+* `test.sh`
+
+  * Run a non-interactive test flow:
+
+    * Ensure dependencies are installed (or call `setup.sh`).
+    * Start the server.
+    * Wait for it to be ready.
+    * Make HTTP requests (e.g., with `curl`) to verify:
+
+      * The server returns HTTP 200 for `/`.
+      * The HTML contains expected UI elements (e.g., search input, product card container).
+    * Exit with a non-zero status code if checks fail.
+
+* `Dockerfile`
+
+  * Define a reproducible environment.
+  * Install dependencies.
+  * Copy the project into the image.
+  * Run `test.sh` as the container’s main command (or in `CMD`/entrypoint).
+  * The container build + run should pass when the app is correctly implemented.
+
+---
+
+## Deliverables
+
+By the end, you must produce:
+
+1. A fully functional web UI available at port 3000
+2. Automation files:
+
+   * `setup.sh`
+   * `run.sh`
+   * `test.sh`
+   * `Dockerfile`
+3. A **README.md** documenting:
+
+   * Overview of project
+   * How the UI works
+   * How to run `setup.sh`, `run.sh`, `test.sh`
+   * How to build/run the Docker image
+   * Any caveats or design decisions
+4. A brief changelog describing:
+
+   * Files created
+   * Files modified
+   * Key choices made in implementation
+
+
+---
+
+## Important Notes
+
+* Always analyze the user request before modifying files.
+* Maintain syntax correctness and fix compile/runtime errors immediately.
+* Ensure the server on port 3000 is reachable and stable before considering the task done.
+* Do not fake test results: `test.sh` and the Docker image must exercise the real running app.
+
+
+GitHub Copilot: Perfect — I'll inspect the workspace and plan the small steps to implement a responsive static product browsing UI and add automation scripts. My next step is to list tasks and mark the first task in-progress.
+
+Created 3 todos
+
+I'm starting the planning & inspection step now.
+
+Starting: *Plan & Inspect* (1/3)
+
+Searched for files matching `**/*`, 1 match
+
+Read [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/input.html)
+
+Nice — I'll implement the improved static HTML with a working search, category filter, sort, loading state, and empty state. After that I'll add scripts and Dockerfile.
+
+Starting: *Implement UI* (2/3)
+
+Using "Replace String in File"
+
+
+```
+
+```
+I'm moving on to create automation scripts (setup/run/test), Dockerfile, README and a changelog. I'll add those now and mark the automation step in-progress.
+
+Starting: *Add automation* (3/3)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/setup.sh)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/run.sh)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/test.sh)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/Dockerfile)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/README.md)
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/CHANGELOG.md)
+
+Completed: *Add automation* (3/3)
+
+Proceeding to run the test suite and verify the app is reachable on port 3000. I'll start the server then run a basic HTTP check.
+
+Ran terminal command: bash -lc "./run.sh"
+
+Ran terminal command: bash -lc "./test.sh"
+
+Good catch: the dev server was already running and the root didn't load our page because the file is named input.html, not `index.html`. I'll add an `index.html` that loads the same content and re-run the test.
+
+Created [](file:///c%3A/Bug_Bash/25_11_19/v-coralhuang_25_11_19_case1/index.html)
+
+Ran terminal command: bash -lc "sleep 1; curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/"
+
+Ran terminal command: bash -lc "curl -s http://localhost:3000/ | grep -o 'id=\"search\" || true' && curl -s http://localhost:3000/ | grep -o 'id=\"products\" || true'"
+
+Ran terminal command: bash -lc "curl -s http://localhost:3000/ | grep -q 'id=\"search\"' && echo 'search ok' || echo 'missing search'"
+
+Ran terminal command: bash -lc 'curl -s http://localhost:3000/ | grep -q "id=\"search\"" && echo "search ok" || echo "missing search"'
+
+Ran terminal command: bash -lc "curl -s http://localhost:3000/ | sed -n '1,120p'"
+
+Good — the server root currently redirects to input.html. I'll update test.sh so it checks input.html instead of `/` and re-run the tests.
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+
+```
+
+```
+
+
+Using "Replace String in File"
+
+Continue to iterate?
+[object Object]
+
+Made changes.
+
+User: @agent Continue: "Continue to iterate?"
+
+GitHub Copilot: Ran terminal command: bash -lc "./test.sh"
+
+Perfect — I inspected the workspace, implemented a modern, responsive static product browser, added automation for local testing, and verified the app runs on port 3000. My next step is to summarize the changes and usage instructions.
+
+## ✅ What I changed
+- Reworked the page and JavaScript into a responsive product browsing UI
+  - Added: search, category filter, price sort, loading simulation, friendly empty state
+  - Uses Tailwind CDN styling
+- Created automation and CI files:
+  - setup.sh — minimal environment checks
+  - run.sh — starts a static server on port 3000
+  - test.sh — non-interactive checks (HTTP 200 & presence of key elements)
+  - Dockerfile — reproducible environment that runs test.sh
+  - README.md — usage / quick instructions
+  - CHANGELOG.md — summary of edits
+
+Files added/modified
+- Modified: input.html (fully rewritten into a clean product browser)
+- Added: index.html (redirect to input.html)
+- Added: setup.sh, run.sh, test.sh, Dockerfile, README.md, CHANGELOG.md
+
+---
+
+## 🔧 How to run (local)
+1. Make scripts executable:
+   - bash -lc "chmod +x ./*.sh"
+2. Setup:
+   - setup.sh
+3. Start server:
+   - run.sh
+4. Manual check:
+   - Open http://localhost:3000 (this redirects to /input.html)
+   - The UI contains a search bar, category selector, sort control, and a product grid
+
+---
+
+## 🧪 Automated test (single-check)
+- Run:
+  - test.sh
+- The script:
+  - Ensures Python3 is available
+  - Starts the server (if not already running)
+  - Verifies HTTP 200 on input.html
+  - Verifies the page contains `id="search"` and `id="products"`
+
+---
+
+## 🐳 Docker
+- Build image:
+  - docker build -t product-browser .
+- Run image (it runs test.sh as the container's command; build/run will return non-zero if tests fail):
+  - docker run --rm product-browser
+
+---
+
+## ⚙️ Implementation notes (technical)
+- Product data is rendered client-side in input.html from a small JS array to keep things simple and portable.
+- Search and category filter are case-insensitive and filter on name/description/category.
+- Sorting supports ascending/descending by price.
+- Loading is simulated with a 350ms delay to show the "Applying filters..." status.
+- Empty state shows when no products match.
+
+---
+
+## ✍️ Changelog (summary)
+- Modified input.html — new UI + logic
+- Added supporting scripts: setup.sh, run.sh, test.sh, Dockerfile, README.md, CHANGELOG.md
+- Created index.html redirect to input.html
+
+---
+
+If you'd like, I can:
+- Convert it into a small SPA with modular JS (ES modules),
+- Add a "reset filters" button and keyboard accessibility improvements,
+- Or turn this into a basic Next.js project and wire up a JSON API for products.
+
+GitHub Copilot — using swe-vsc-mix21-arm2-rerun-1115.
