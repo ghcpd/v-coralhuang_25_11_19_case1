@@ -1,25 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$THIS_DIR"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
 
-./setup.sh
+PORT="${PORT:-3000}"
 
-cleanup() {
-  if [ -n "${SERVER_PID:-}" ] && ps -p "$SERVER_PID" > /dev/null 2>&1; then
-    kill "$SERVER_PID" >/dev/null 2>&1 || true
+detect_next() {
+  [[ -f package.json && -f app/page.tsx ]]
+}
+
+kill_port() {
+  local port="$1"
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -tiTCP:"$port" -sTCP:LISTEN | xargs -r kill -9 || true
+  elif command -v fuser >/dev/null 2>&1; then
+    fuser -k "$port"/tcp || true
   fi
 }
 
-trap cleanup EXIT
+kill_port "$PORT"
 
-if [ -f package.json ] && grep -q '"next"' package.json; then
-  echo "Detected Next.js project. Starting dev server on port 3000."
-  nohup yarn dev -p 3000 >/tmp/nextjs.log 2>&1 &
-  SERVER_PID=$!
-  wait "$SERVER_PID"
+if detect_next; then
+  LOG="/tmp/nextjs.log"
+  echo "Starting Next.js dev server on port $PORT... (logs: $LOG)"
+  nohup yarn dev -p "$PORT" > "$LOG" 2>&1 &
+  echo $! > /tmp/nextjs.pid
 else
-  echo "Starting static site with python3 -m http.server on port 3000."
-  python3 -m http.server 3000
+  LOG="/tmp/html.log"
+  echo "Starting static server on port $PORT... (logs: $LOG)"
+  nohup python3 -m http.server "$PORT" > "$LOG" 2>&1 &
+  echo $! > /tmp/html.pid
 fi
+
+echo "Server started."

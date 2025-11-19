@@ -1,68 +1,62 @@
-# Product Explorer
+# Product Browser UI
 
-A modern, responsive product browsing interface built as a static HTML experience enhanced with Tailwind CSS and vanilla JavaScript. The UI supports instant searching, category filtering, price sorting, simulated loading feedback, and a friendly empty state for unmatched results.
+Modern, responsive product browsing UI with search, category filter, price sorting, loading state, and empty state. Runs as a static HTML app (Tailwind CDN) with reusable scripts for setup, run, and test, plus a Docker image for reproducibility.
 
 ## Features
-- Responsive card grid that adapts from mobile to desktop layouts
-- Search-as-you-type filtering across product names and descriptions
-- Category filter and multiple sorting strategies (featured, price, alphabetical)
-- Simulated loading indicator, disabled controls, and accessible `aria-live` updates
-- Empty-state messaging when no products satisfy the active filters
+- **Product grid** with cards showing name, price, category, and description.
+- **Search** across name, description, and category (case-insensitive).
+- **Category filter** and **price sort (asc/desc)**.
+- **Simulated loading state** on filter changes.
+- **Friendly empty state** with reset button.
+- **Responsive layout** (1/2/3 columns for mobile/tablet/desktop).
+- **Accessibility**: labels, `aria-live` updates, focusable cards.
+
+## Project Type
+- Static HTML app (entrypoint: `index.html`).
+- No build step required.
 
 ## Prerequisites
-Ensure the following tooling is available:
-- `python3`
-- `curl`
+- Unix-like shell with `bash`
+- `python3` (for static server)
+- `curl` (for tests)
+- Optional: `node`/`yarn` if you later convert to Next.js
 
-The helper scripts validate these dependencies automatically.
-
-## Setup
+## Quick Start
 ```bash
-./setup.sh
+./setup.sh      # install prerequisites (best-effort) and dependencies
+./run.sh        # start server on port 3000
+# visit http://localhost:3000
 ```
-Runs prerequisite checks and prepares the environment (no additional installs required for the static app).
 
-## Run the Dev Server
+## Tests
 ```bash
-./run.sh
+./test.sh       # runs setup, starts server, waits for readiness, asserts key elements
 ```
-- Detects whether the workspace is a Next.js project or a static site.
-- For this static build, starts `python3 -m http.server` on port `3000`.
 
-Visit http://localhost:3000 to explore the UI.
+## Scripts
+- `setup.sh` — installs dependencies (yarn if Next.js detected) and ensures `python3`/`curl`.
+- `run.sh` — detects Next.js (`app/page.tsx`) vs static; starts appropriate server on port `3000`.
+- `test.sh` — ensures setup, starts server, polls readiness, verifies HTML contains `search-input` and `product-list`.
 
-## Automated Tests
-```bash
-./test.sh
-```
-- Verifies prerequisites
-- Starts the server in the background
-- Polls `http://127.0.0.1:3000/` for readiness
-- Asserts an HTTP 200 response and checks that critical UI elements render in the served HTML
+Logs:
+- Static: `/tmp/html.log`
+- Next.js: `/tmp/nextjs.log`
 
 ## Docker
-Build the containerized test runner and execute it:
 ```bash
-docker build -t product-explorer .
-docker run --rm -p 3000:3000 product-explorer
-```
-`CMD` within the image runs `./test.sh`, ensuring the application and smoke tests succeed inside the container.
-
-## Project Structure
-```
-index.html      # Main application entry point
-input.html      # Redirect shim for legacy references
-setup.sh        # Environment verification
-run.sh          # Dev server launcher
-test.sh         # Smoke-test harness with HTTP assertions
-Dockerfile      # Reproducible environment definition
-README.md       # Project documentation
-CHANGELOG.md    # High-level change log
+docker build -t product-browser .
+docker run --rm -p 3000:3000 product-browser
+# container runs ./test.sh by default
 ```
 
 ## Design Notes
-- Tailwind CSS CDN keeps the stack lightweight while enabling modern styling.
-- Debounced search minimizes unnecessary filter executions as the user types.
-- A simulated latency window (360 ms) creates a tangible loading state without external APIs.
-- All interactive controls are disabled while loading to avoid conflicting requests.
-- The UI announces state changes via `aria-live` and `aria-busy` attributes for assistive technologies.
+- Chose **static HTML + Tailwind CDN** for simplicity and zero build.
+- Simulated loading via `setTimeout` (350ms) on filter changes.
+- IDs `search-input` and `product-list` are stable for tests and automation.
+
+## Windows Notes
+- Use WSL or Git Bash to run the scripts, or open `index.html` directly in a browser for a quick view.
+
+## Troubleshooting
+- If port 3000 is busy, scripts attempt to free it (`lsof`/`fuser` if available).
+- Check logs in `/tmp/html.log` or `/tmp/nextjs.log` when servers fail to start.

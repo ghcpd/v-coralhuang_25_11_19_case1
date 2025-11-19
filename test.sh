@@ -1,43 +1,76 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$THIS_DIR"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
+
+PORT="${PORT:-3000}"
+
+detect_next() {
+  [[ -f package.json && -f app/page.tsx ]]
+}
+
+kill_port() {
+  local port="$1"
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -tiTCP:"$port" -sTCP:LISTEN | xargs -r kill -9 || true
+  elif command -v fuser >/dev/null 2>&1; then
+    fuser -k "$port"/tcp || true
+  fi
+}
+
+start_server() {
+  if detect_next; then
+    LOG="/tmp/nextjs.log"
+    nohup yarn dev -p "$PORT" > "$LOG" 2>&1 &
+    SERVER_PID=$!
+  else
+    LOG="/tmp/html.log"
+    nohup python3 -m http.server "$PORT" > "$LOG" 2>&1 &
+    SERVER_PID=$!
+  fi
+}
+
+cleanup() {
+  kill_port "$PORT"
+  if [[ -n "${SERVER_PID:-}" ]]; then
+    kill "$SERVER_PID" >/dev/null 2>&1 || true
+  fi
+}
+
+trap cleanup EXIT
 
 ./setup.sh
 
-SERVER_PID=""
-start_server() {
-  if [ -f package.json ] && grep -q '"next"' package.json; then
-    nohup yarn dev -p 3000 >/tmp/nextjs-test.log 2>&1 &
-  else
-    nohup python3 -m http.server 3000 >/tmp/html-test.log 2>&1 &
-  fi
-  SERVER_PID=$!
-}
-
-stop_server() {
-  if [ -n "$SERVER_PID" ] && ps -p "$SERVER_PID" > /dev/null 2>&1; then
-    kill "$SERVER_PID" >/dev/null 2>&1 || true
-    wait "$SERVER_PID" 2>/dev/null || true
-  fi
-}
-
-trap stop_server EXIT
-
+kill_port "$PORT"
 start_server
 
-ATTEMPTS=30
-until curl -sSf -o /tmp/app-root.html http://127.0.0.1:3000/ >/dev/null 2>&1; do
-  ATTEMPTS=$((ATTEMPTS - 1))
-  if [ "$ATTEMPTS" -le 0 ]; then
-    echo "Server failed to respond on port 3000 within the expected time." >&2
-    exit 1
+echo "Waiting for server on http://localhost:$PORT ..."
+for i in {1..60}; do
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$PORT" || true)
+  if [[ "$STATUS" == "200" ]]; then
+    READY=1
+    break
   fi
   sleep 1
 done
 
-grep -q 'id="searchInput"' /tmp/app-root.html || { echo "Search input not found in rendered HTML." >&2; exit 1; }
-grep -q 'id="productContainer"' /tmp/app-root.html || { echo "Product container not found in rendered HTML." >&2; exit 1; }
+if [[ -z "${READY:-}" ]]; then
+  echo "Server did not become ready in time. Logs:" >&2
+  tail -n 50 "$LOG" >&2 || true
+  exit 1
+fi
+
+HTML=$(curl -s "http://localhost:$PORT")
+
+if ! grep -q 'id="search-input"' <<<"$HTML"; then
+  echo "Expected search input not found in HTML." >&2
+  exit 1
+fi
+
+if ! grep -q 'id="product-list"' <<<"$HTML"; then
+  echo "Expected product list container not found in HTML." >&2
+  exit 1
+fi
 
 echo "All checks passed."

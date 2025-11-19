@@ -1,15 +1,16 @@
-FROM python:3.11-slim
+FROM node:20-bullseye-slim
 
-WORKDIR /app
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends python3 python3-pip curl lsof \
     && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src/app
 
 COPY . .
 
-RUN chmod +x setup.sh run.sh test.sh \
-    && ./setup.sh
+RUN chmod +x setup.sh run.sh test.sh
+RUN ./setup.sh
 
 EXPOSE 3000
 
