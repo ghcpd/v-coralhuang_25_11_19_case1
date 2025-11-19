@@ -1,43 +1,120 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Broken Product Search</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Browser</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="p-4">
-  <input id="search" class="border p-2 mb-4 w-full" placeholder="Search something">
+<body class="bg-gray-50 min-h-screen p-6">
+  <main class="max-w-5xl mx-auto">
+    <header class="mb-6">
+      <h1 class="text-2xl font-extrabold text-slate-800">Products</h1>
+      <p class="text-sm text-slate-500 mt-1">Search and filter a small catalog — responsive, accessible, and fast.</p>
+    </header>
 
-  <div id="products" class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-    <div class="border p-4">
-      <h2 class="font-bold">Laptop</h2>
-      <p>$1000</p>
-      <p>Good laptop</p>
-    </div>
+    <section aria-label="controls" class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+      <div class="col-span-2">
+        <label for="search" class="sr-only">Search products</label>
+        <input id="search" type="text" placeholder="Search products by name or description" class="w-full p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+      </div>
 
-    <div class="border p-4">
-      <h2 class="font-bold">Phone</h2>
-      <p>$500</p>
-      <p>Nice phone</p>
-    </div>
+      <div class="flex gap-2">
+        <select id="category" class="p-3 border rounded-lg w-1/2">
+          <option value="all">All categories</option>
+        </select>
+        <select id="sort" class="p-3 border rounded-lg w-1/2">
+          <option value="default">Sort</option>
+          <option value="price-asc">Price: low &uarr;</option>
+          <option value="price-desc">Price: high &darr;</option>
+        </select>
+      </div>
+    </section>
 
-    <div class="border p-4">
-      <h2 class="font-bold">Camera</h2>
-      <p>$300</p>
-      <p>Sharp image</p>
+    <div id="status" class="my-4 text-sm text-slate-500"></div>
+
+    <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4" aria-live="polite"></div>
+
+    <div id="empty" class="hidden mt-8 bg-white border rounded-lg p-6 text-center text-slate-600">
+      <h3 class="text-lg font-semibold">No products found</h3>
+      <p class="mt-2">Try modifying your search or clearing filters.</p>
     </div>
-  </div>
+  </main>
 
   <script>
-    // Broken: typo, broken logic, no event binding
-    functon filter() {
-      var keyword = document.getElementById("search").value
-      var items = document.querySelectorAll("#products .item-not-exist")
-      items.forEach(i=>{
-        if(!i.textContent.includes(keyword)) {
-          i.style.display = 'none'
-        }
+    const productsEl = document.getElementById('products')
+    const searchEl = document.getElementById('search')
+    const categoryEl = document.getElementById('category')
+    const sortEl = document.getElementById('sort')
+    const emptyEl = document.getElementById('empty')
+    const statusEl = document.getElementById('status')
+
+    const PRODUCTS = [
+      { id: 1, name: 'Laptop', price: 1000, category: 'Electronics', description: 'A powerful laptop for work and play.' },
+      { id: 2, name: 'Phone', price: 500, category: 'Electronics', description: 'A sleek smartphone with a great camera.' },
+      { id: 3, name: 'Camera', price: 300, category: 'Photography', description: 'Capture crisp photos with ease.' },
+      { id: 4, name: 'Backpack', price: 80, category: 'Accessories', description: 'Carry your gear comfortably.' },
+      { id: 5, name: 'Headphones', price: 150, category: 'Audio', description: 'Immersive sound for music fans.' },
+      { id: 6, name: 'Watch', price: 250, category: 'Accessories', description: 'A stylish everyday watch.' }
+    ]
+
+    function renderProducts(list) {
+      productsEl.innerHTML = ''
+      list.forEach(p => {
+        const el = document.createElement('article')
+        el.className = 'bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow border'
+        el.innerHTML = `
+          <h2 class="text-lg font-semibold text-slate-800">${p.name}</h2>
+          <p class="text-indigo-600 font-bold mt-1">$${p.price}</p>
+          <p class="text-sm text-slate-500 mt-2">${p.description}</p>
+          <p class="text-xs mt-3 text-slate-400">Category: ${p.category}</p>
+        `
+        productsEl.appendChild(el)
       })
     }
+
+    function populateCategories() {
+      const cats = Array.from(new Set(PRODUCTS.map(p => p.category)))
+      cats.forEach(c => {
+        const opt = document.createElement('option')
+        opt.value = c
+        opt.textContent = c
+        categoryEl.appendChild(opt)
+      })
+    }
+
+    function applyFilters() {
+      statusEl.textContent = 'Applying filters...'
+      // show a short simulated loading state
+      productsEl.classList.add('opacity-60')
+      setTimeout(() => {
+        const keyword = searchEl.value.trim().toLowerCase()
+        const cat = categoryEl.value
+        let filtered = PRODUCTS.filter(p => {
+          const matchText = [p.name, p.description, p.category].join(' ').toLowerCase()
+          return (!keyword || matchText.includes(keyword)) && (cat === 'all' || p.category === cat)
+        })
+
+        const sortVal = sortEl.value
+        if (sortVal === 'price-asc') filtered.sort((a,b)=>a.price-b.price)
+        if (sortVal === 'price-desc') filtered.sort((a,b)=>b.price-a.price)
+
+        renderProducts(filtered)
+        statusEl.textContent = `Showing ${filtered.length} product(s)`
+        emptyEl.classList.toggle('hidden', filtered.length > 0)
+        productsEl.classList.remove('opacity-60')
+      }, 350)
+    }
+
+    // Event bindings
+    searchEl.addEventListener('input', applyFilters)
+    categoryEl.addEventListener('change', applyFilters)
+    sortEl.addEventListener('change', applyFilters)
+
+    // Initial render
+    populateCategories()
+    renderProducts(PRODUCTS)
+    statusEl.textContent = `Showing ${PRODUCTS.length} product(s)`
   </script>
 </body>
 </html>
