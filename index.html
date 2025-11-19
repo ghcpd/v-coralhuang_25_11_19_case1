@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Product Browser</title>
+  <!-- Tailwind CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8 lg:p-12">
+  <header class="max-w-6xl mx-auto">
+    <h1 class="text-2xl md:text-3xl font-semibold text-gray-900">Product Browser</h1>
+    <p class="mt-1 text-gray-600">Explore products — search, filter by category, and sort by price.</p>
+  </header>
+
+  <main class="max-w-6xl mx-auto mt-6">
+    <section class="bg-white shadow rounded p-4 md:p-6 flex flex-col md:flex-row gap-3 md:items-center">
+      <div class="flex-1">
+        <label for="search" class="sr-only">Search</label>
+        <input id="search" type="search" aria-label="Search products" placeholder="Search products" class="w-full border-gray-200 rounded p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+      </div>
+
+      <div class="w-full md:w-auto flex gap-3">
+        <select id="category" class="border-gray-200 rounded p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="all">All categories</option>
+        </select>
+
+        <select id="sort" class="border-gray-200 rounded p-2 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="default">Sort</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+
+        <button id="clear" class="bg-gray-100 border rounded p-2 hover:bg-gray-200">Clear</button>
+      </div>
+    </section>
+
+    <section id="status" aria-live="polite" role="status" class="max-w-6xl mx-auto mt-4"></section>
+
+    <section id="products" role="list" aria-live="polite" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></section>   
+
+    <template id="card-template">
+      <article role="listitem" class="bg-white rounded shadow p-4 flex flex-col hover:shadow-lg transition-shadow">
+        <div class="h-40 bg-gray-100 rounded mb-4 flex items-center justify-center text-gray-400">Image</div>
+        <h2 class="font-semibold text-lg text-gray-900">Title</h2>
+        <p class="text-gray-600 mt-1">Short description</p>
+        <div class="mt-4 flex items-center justify-between">
+          <div class="text-indigo-600 price font-medium">$0</div>
+          <div class="text-sm text-gray-500">Category</div>
+        </div>
+      </article>
+    </template>
+  </main>
+
+  <script>
+    // Product data
+    const productsData = [
+      {id:1, name: 'Laptop', price: 1000, category: 'Electronics', desc: 'Powerful laptop for work and play.'},
+      {id:2, name: 'Phone', price: 500, category: 'Electronics', desc: 'Sleek smartphone with great camera.'},
+      {id:3, name: 'Camera', price: 300, category: 'Photography', desc: 'Capture sharp images with ease.'},
+      {id:4, name: 'Headphones', price: 150, category: 'Audio', desc: 'Comfortable headset with active noise-cancelling.'},
+      {id:5, name: 'Monitor', price: 200, category: 'Electronics', desc: '24-inch monitor with crisp colors.'},
+      {id:6, name: 'Tripod', price: 75, category: 'Photography', desc: 'Stable tripod for long exposures.'},
+      {id:7, name: 'Keyboard', price: 60, category: 'Accessories', desc: 'Mechanical keyboard with adjustable RGB.'},
+      {id:8, name: 'Mouse', price: 40, category: 'Accessories', desc: 'Ergonomic mouse for comfortable work.'},
+    ];
+
+    // DOM elements
+    const productsEl = document.getElementById('products');
+    const searchEl = document.getElementById('search');
+    const categoryEl = document.getElementById('category');
+    const sortEl = document.getElementById('sort');
+    const clearEl = document.getElementById('clear');
+    const statusEl = document.getElementById('status');
+    const cardTemplate = document.getElementById('card-template');
+
+    // State
+    let state = {
+      search: '',
+      category: 'all',
+      sort: 'default',
+      loading: false
+    };
+
+    function setLoading(on) {
+      state.loading = on;
+      statusEl.innerHTML = on ? '<div class="p-4 bg-indigo-50 text-indigo-700 rounded">Loading results...</div>' : '';
+    }
+
+    // Render functions
+    function renderProducts(items) {
+      productsEl.innerHTML = '';
+      if(items.length === 0) {
+        productsEl.innerHTML = '<div class="col-span-full text-center p-8 text-gray-500">No products match your search. Try different filters.</div>';
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+      items.forEach(p => {
+        const card = cardTemplate.content.cloneNode(true);
+        card.querySelector('h2').textContent = p.name;
+        card.querySelector('p').textContent = p.desc;
+        card.querySelector('.price').textContent = '$' + p.price;
+        card.querySelector('.text-sm').textContent = p.category;
+        frag.appendChild(card);
+      });
+      productsEl.appendChild(frag);
+    }
+
+    function applyFilters() {
+      setLoading(true);
+      // simulate network latency
+      setTimeout(()=>{
+        let items = productsData.slice();
+        // search
+        if(state.search && state.search.trim() !== '') {
+          const q = state.search.trim().toLowerCase();
+          items = items.filter(p => (p.name + ' ' + p.desc + ' ' + p.category).toLowerCase().includes(q));
+        }
+        // category
+        if(state.category !== 'all') {
+          items = items.filter(p => p.category === state.category);
+        }
+        // sort
+        if(state.sort === 'price-asc') items.sort((a,b)=>a.price-b.price);
+        if(state.sort === 'price-desc') items.sort((a,b)=>b.price-a.price);
+
+        renderProducts(items);
+        setLoading(false);
+      }, 300);
+    }
+
+    // Initialize category options
+    function initCategories() {
+      const categories = Array.from(new Set(productsData.map(p => p.category))).sort();
+      categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        categoryEl.appendChild(opt);
+      });
+    }
+
+    // Event listeners
+    searchEl.addEventListener('input', ()=>{
+      state.search = searchEl.value;
+      applyFilters();
+    });
+
+    categoryEl.addEventListener('change', ()=>{
+      state.category = categoryEl.value;
+      applyFilters();
+    });
+
+    sortEl.addEventListener('change', ()=>{
+      state.sort = sortEl.value;
+      applyFilters();
+    });
+
+    clearEl.addEventListener('click', ()=>{
+      state.search = '';
+      state.category = 'all';
+      state.sort = 'default';
+      searchEl.value = '';
+      categoryEl.value = 'all';
+      sortEl.value = 'default';
+      applyFilters();
+    });
+
+    // initial
+    initCategories();
+    applyFilters();
+  </script>
+</body>
+</html>
