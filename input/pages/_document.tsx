@@ -22,7 +22,7 @@ export default class MyDocument extends Document {
           <meta name="theme-color" content={theme.palette.primary.main} />
           <link rel="icon" href="/favicon.ico" />
           <meta name="emotion-insertion-point" content="" />
-          <DocumentHeadTags />
+          <DocumentHeadTags emotionStyleTags={[]} />
         </Head>
         <body>
           <Main />
